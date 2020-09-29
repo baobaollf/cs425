@@ -1,0 +1,60 @@
+<!-- 
+Linfeng Li
+lli201
+8/31/2020
+CS 425
+University of Illinois at Chicago 
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<!--
+    vertex shader
+-->
+<script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec4 vPosition;
+    attribute vec4 colors;
+    varying vec4 varyingColors;
+
+    void main() {
+    gl_Position = vPosition;
+    varyingColors = colors;
+}
+</script>
+
+<!--
+    fragment shader
+-->
+<script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    varying vec4 varyingColors;
+
+    void main() {
+    gl_FragColor = varyingColors;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="kaleidoscopic.js"></script>
+</head>
+
+
+<!--
+    canvas
+-->
+<body>
+	<h1>
+		Linfeng Li
+	</h1>
+	<h2>
+		NetID: lli201
+	</h2>
+	<h5>
+		this program will randomly generate six different sets of triangles; each triangle set has 8 randomly generated triangles; each trangle is assigned to a verying color and rendered.
+	</h5>
+    <canvas id="gl-canvas" width="512" height="512">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+</body>
+</html>
