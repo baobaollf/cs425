@@ -4,65 +4,110 @@
 // CS 425
 // University of Illinois at Chicago
 
-
-// Globals are evil, but necessary when callback functions are used
-
-// Object-independent variables
-var gl;				// WebGL graphics environment
-var program;		// The shader program
-var aspectRatio;	// Aspect ratio of viewport
-
-
-// Cone-related variables - Only buffer IDs when using separate functions
+var points = [];	// Vertex location data
+var colors = [];	// Vertex color data
+var nSectors = 15;	// Number of sectors in first cone
 var coneBuffers;		// Array of buffer IDs used by the randomly colored cone
 var coneBuffers2;
-var nConeSectors = 15;	// Number of sectors in first cone
+var MGA_location = [];
+var cone_one_location = [];
+var cone_two_location = [];
 
-// Initialization function runs whenever the page is loaded
+function createCone(gl) {
+    colors = [];
+    points = [];
+    for (let i = 0; i < nSectors + 2; i++) {
+        colors.push(vec3(Math.random(), Math.random(), Math.random()));
+        // Push a random color here, as a vec3
+    }
 
-window.onload = function init( ) {
-	// Set up the canvas, viewport, and clear color
+    points.push(vec3(0, 1, 0));
+    // Then the base points
+    dTheta = radians(360 / nSectors);
+    for (i = 1; i <= nSectors + 1; i++) { // Duplicate ( 1, 0, 0 ) to close loop.
+        var theta = i * dTheta;
+        points.push(vec3(Math.cos(theta), 0, Math.sin(theta)));
+        // push a vertex here, using Math.cos( theta ) for X and Math.sin( theta ) for Z
+    }
 
-	var canvas = document.getElementById( "gl-canvas" );
-	gl=WebGLUtils.setupWebGL( canvas );
-	if( !gl ) {
-		alert( "No WebGL" );
-	}
-	gl.viewport( 0, 0, canvas.width, canvas.height );
-	aspectRatio = canvas.width / canvas.height ;
-	gl.clearColor( 1.0, 1.0, 0.5, 1.0 );
-	// Load the shaders, create a GLSL program, and use it.
-	program = initShaders( gl, "vertex-shader", "fragment-shader" );
-	gl.useProgram( program );
-	// Generate Points and Colors
-	// Unbind the buffer, for safety sake.
-	
-	gl.bindBuffer( gl.ARRAY_BUFFER, null );
-	coneBuffers = createCone( nConeSectors, gl);
-	coneBuffers2 = createCone( nConeSectors, gl);
-	gl.enable( gl.DEPTH_TEST );	// Note:  This line had an error in the exercise template.
-	
-	// Initialization is done.  Now initiate first rendering
-	render( );
+    nPoints = nSectors + 2;
+
+    console.log(points)
+
+
+    return [vbufferID, cbufferID];
+
 }
 
-function render( ) {
-	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-	var modelView = lookAt(vec3(2.0, 1.5, 1.5), vec3(0, 0, 0), vec3(0, 1, 0));
-	var vModelView = gl.getUniformLocation(program, "vModelView");
-	gl.uniformMatrix4fv(vModelView, false, flatten(modelView));
+function renderCone(buffers, gl, program, x, z) {
 
-	// Create another mat4 using perspective( ) and send it to the GPU
+    // Connect the vertex data to the shader variables - First positions
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers[0]);
+    var vPosition = gl.getAttribLocation(program, "vPosition");
+    gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vPosition);
 
-	var projection = perspective(60, aspectRatio, 0.1, 10.0);
-	var vProjection = gl.getUniformLocation(program, "vProjection");
-	gl.uniformMatrix4fv(vProjection, false, flatten(projection));
-	
-	gl.bindBuffer( gl.ARRAY_BUFFER, null );
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers[1]);
+    var vColor = gl.getAttribLocation(program, "vColor");
+    gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vColor);
 
+    // Unbind the array buffer, for safety sake.
 
-	renderCone( coneBuffers,  nConeSectors, gl, program, 0, 0, 0 );
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    var transformation = mat4();
+    var vTransformation = gl.getUniformLocation(program, "vTransformation");
 
-	renderCone( coneBuffers2,  nConeSectors, gl, program, 0, 1, 1 );
-	console.log("got here");
+    var today = new Date();
+    transformation = mult(translate(x, 0.5 * Math.sin(today.getTime() / 1000 / 6 * 2 * Math.PI), z), scalem(0.2, 0.5, 0.2));
+    gl.uniformMatrix4fv(vTransformation, false, flatten(transformation));
+    gl.enableVertexAttribArray(vTransformation);
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, (nSectors + 2));	// Sides
+
+}
+
+function createMGA(gl) {
+    coneBuffers = createCone(gl);
+    coneBuffers2 = createCone(gl);
+    return createCone(gl);
+}
+
+function renderMGA(buffers, gl, program, x, y, z) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers[0]);
+    var vPosition = gl.getAttribLocation(program, "vPosition");
+    gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vPosition);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers[1]);
+    var vColor = gl.getAttribLocation(program, "vColor");
+    gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vColor);
+
+    // Unbind the array buffer, for safety sake.
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    var transformation = mat4();
+    var vTransformation = gl.getUniformLocation(program, "vTransformation");
+
+    // MGA top
+    var today = new Date();
+    transformation = mult(rotateY(today.getTime() / 5), translate(x, y, z), );
+    gl.uniformMatrix4fv(vTransformation, false, flatten(transformation));
+    gl.enableVertexAttribArray(vTransformation);
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, (nSectors + 2));
+
+    // MGA bottom
+    transformation = mult(rotateY(today.getTime() / 5), translate(x, y - 1.6, z));
+    gl.uniformMatrix4fv(vTransformation, false, flatten(transformation));
+    gl.enableVertexAttribArray(vTransformation);
+    gl.drawArrays(gl.TRIANGLE_FAN, 1, (nSectors + 1));
+
+    // horses
+    renderCone(coneBuffers, gl, program, 0, 0);
+    renderCone(coneBuffers2, gl, program, 0, 1);
+
+    // var whole = gl.getUniformLocation(program, "vTransformation");
+    // transformation = translate(0, 0, translate(0, 0, 0.5 * Math.sin(today.getTime() / 1000 / 6 * 2 * Math.PI)));
+    // gl.uniformMatrix4fv(vTransformation, false, flatten(transformation));
+
 }

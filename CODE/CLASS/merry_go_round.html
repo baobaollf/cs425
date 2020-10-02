@@ -44,18 +44,7 @@ University of Illinois at Chicago
 		
 		// Pass-throughs to fragment shader
 		color = vec4( vColor, 1 );
-		
-		// Minimal functionality sets position and ends.
-		// gl_Position = vec4( vPosition, 1.0 );
-	
-		// Apply the ( composite ) transformation
-		// TODO 2 - Apply the Model View transformation
-		// gl_Position = vModelView * vec4( vPosition, 1.0 );
-		
-		// TODO 3 - Apply the projection transformation
-		// gl_Position = vProjection * vModelView * vec4( vPosition, 1.0 );
-		
-		// TODO 4 - Apply the model transformation
+
 		gl_Position = vProjection * vModelView * vTransformation * vec4( vPosition, 1.0 );
 
 		return;		
