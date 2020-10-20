@@ -9,7 +9,6 @@ var colors = [];	// Vertex color data
 var nSectors = 15;	// Number of sectors in first cone
 var coneBuffers;		// Array of buffer IDs used by the randomly colored cone
 var coneBuffers2;
-var MGA_location = [];
 var cone_one_location = [];
 var cone_two_location = [];
 
@@ -20,7 +19,6 @@ function createCone(gl) {
         colors.push(vec3(Math.random(), Math.random(), Math.random()));
         // Push a random color here, as a vec3
     }
-
     points.push(vec3(0, 1, 0));
     // Then the base points
     dTheta = radians(360 / nSectors);
@@ -29,14 +27,8 @@ function createCone(gl) {
         points.push(vec3(Math.cos(theta), 0, Math.sin(theta)));
         // push a vertex here, using Math.cos( theta ) for X and Math.sin( theta ) for Z
     }
-
     nPoints = nSectors + 2;
-
-    console.log(points)
-
-
     return [vbufferID, cbufferID];
-
 }
 
 function renderCone(buffers, gl, program, x, z) {
@@ -105,9 +97,5 @@ function renderMGA(buffers, gl, program, x, y, z) {
     // horses
     renderCone(coneBuffers, gl, program, 0, 0);
     renderCone(coneBuffers2, gl, program, 0, 1);
-
-    // var whole = gl.getUniformLocation(program, "vTransformation");
-    // transformation = translate(0, 0, translate(0, 0, 0.5 * Math.sin(today.getTime() / 1000 / 6 * 2 * Math.PI)));
-    // gl.uniformMatrix4fv(vTransformation, false, flatten(transformation));
 
 }
