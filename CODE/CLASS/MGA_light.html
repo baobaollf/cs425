@@ -1,10 +1,10 @@
-<!--coneFunctionsExercise.html
-
-	Written Fall 2020 by YOUR NAME HERE from a template provided by John Bell for CS 425
-    
-    This page displays one or more cones, based on functions in a separate file coneFunctions.js
- -->
-
+<!--
+Linfeng Li
+lli201
+10/29/2020
+CS 425
+University of Illinois at Chicago
+-->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -18,9 +18,9 @@
     <script type="text/javascript" src="../Common/webgl-utils.js"></script>
     <script type="text/javascript" src="../Common/initShaders.js"></script>
     <script type="text/javascript" src="../Common/MV.js"></script>
-    <script type="text/javascript" src="lighting_master.js"></script>    <!--   Change this line -->
-    <script type="text/javascript" src="lighting.js"></script>    <!--   Change this line -->
-
+    <script type="text/javascript" src="Cone_object-light.js"></script>    <!--   Change this line -->
+    <script type="text/javascript" src="MGA_object_light.js"></script>    <!--   Change this line -->
+    <script type="text/javascript" src="MGA_render_light.js"></script>    <!--   Change this line -->
 
     <!-- First the vertex shader ------------------------------------------------------------------>
 
@@ -30,52 +30,42 @@
 	attribute vec3 vPosition;	// Vertex position data in 3D space
 	attribute vec3 vColor;		// Vertex color data - Not needed for all applications
 	
+	
 	// Uniform variables are shared for all vertices 
 	uniform mat4 vModelView;	// Camera Model View Matrix
 	uniform mat4 vProjection;	// Camera Projection Matrix
 	uniform mat4 vTransformation;	// Model transformation matrix
-	
-	// Varying values are passed from vertex shader to fragment shader, as interpolated values 
-	varying vec4 color;			// Interpolated color 
+	uniform mat4 vNormalTransformation;
+    varying vec4 color;
 	
 	void main( ) {
 		precision mediump float;
-		
-		// Pass-throughs to fragment shader
-		// uniform
-	    vec3 lau= vec3(0, 0.3, 0);
-	    // attributes
-	    vec3 ka = vec3( vColor );
-	    vec3 kd = ka;
-	    // uniform
-	    vec3 ldi = vec3(1, 0, 0);
-	    vec3 l = vec3(10, 0, 0);
-	    // attribute
-	    vec3 n = normalize(vPosition);
-	    float dot_product = dot(l, n);
 
-        color = vec4(ka * lau + kd * ldi * dot_product, 1);
+        vec3 ka = vColor;
+        vec3 kd = ka;
+        vec3 Iau = vec3(0, 0.4, 0);
+        vec3 color3 = ka * Iau;
 
-	    // color = vec4(ka * lau, 1) + (kd * ldi * dot(l, n));
-		// color = vec4( vColor, 1 );
-		
-		// Minimal functionality sets position and ends.
-		// gl_Position = vec4( vPosition, 1.0 );
-	
-		// Apply the ( composite ) transformation
-		// TODO 2 - Apply the Model View transformation
-		// gl_Position = vModelView * vec4( vPosition, 1.0 );
-		
-		// TODO 3 - Apply the projection transformation
-		// gl_Position = vProjection * vModelView * vec4( vPosition, 1.0 );
-		
-		// TODO 4 - Apply the model transformation
+        // diffuse light
+        vec3 Ld = vec3(0.5, 0, 0);
+        vec3 l = normalize((vec4(0, 0, 10, 0)).xyz);
+        vec3 normal = normalize((vNormalTransformation * vec4(vPosition, 1)).xyz);
+        float dotProduct = dot(l, normal);
+        color3 = color3 + max(dotProduct, 0.0) * kd * Ld;
+
+
+        vec3 ks = vec3(1, 1, 1);
+        vec3 Ls = vec3(1, 1, 0);
+        vec3 v = vec4(vModelView).xyz;
+        float hnDot = dot(halfVector, normal);
+        color3 += ks * Ls * power(max(hnDot, 0.0), 4);
+
+        color = vec4(color3, 1);
 		gl_Position = vProjection * vModelView * vTransformation * vec4( vPosition, 1.0 );
 
 		return;		
 		
 	} // end of main( ) of vertex shader
-
 
     </script>    <!--	End of vertex shader -->
 
@@ -86,22 +76,18 @@
 	
 	// Varying variables are interpolated between vertices of a triangle
 	varying vec4 color;			// Fragment color - Not needed in all applications
-
+	
 	// Uniform variables are shared for all fragments 
 	// None needed for a simple shader.
 
 	void main( ) {
-		
-		// The simplest fragment shader picks a solid color
-		// gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 ); // Red
-
 		// Next simplest uses the color passed through from the vertex shader ( or from a uniform variable. )
 		gl_FragColor = color;
 			
 		return;
 	
 	} // End of main( ) for fragment shader
-	
+
 
     </script>    <!-- End of fragment shader -->
 
@@ -110,19 +96,44 @@
 <!-- End of all the scripts.  Now here is the actual web page -->
 
 <body>
-<h3 align="center">Lab Exercise to Make Cones Using Functions<br/>
-    John Bell -
-    Fall 2020 -
-    CS 425</h3>
+<h3 align="center">HW3<br/>
+    Linfeng Li -
+    NetID: lli201 -
+    CS 425 -
+    10/29/2020</h3>
 <p></p>
 
 <canvas id="gl-canvas" width="600" height="400">
     Ooops No Canvas Found
 </canvas>
+
+
+<div id="myDIV" style="display:none">
+    <button onclick="closeDiv()">Close</button>
+    <h5>
+        'W' and 'S' to go forward and backwards
+    </h5>
+    <h5>
+        'A' and 'S' to rotate viewpoint with respect to Y axis
+    </h5>
+    <h5>
+        'R' to reset the camera viewpoint
+    </h5>
+    <h5>
+        'Q' to quit
+    </h5>
+    <h5>
+        'H', '?' or any other keys to bring up help list
+    </h5>
+
+</div>
 <p>
-    Linfeng Li -
-    CS 425 -
-    9/24/2020
+    this program is simulating a merry go round structure
 </p>
+<p>
+    user is able to navigate around the scene by using keyboard inputs
+</p>
+
+
 </body>
 </html>
