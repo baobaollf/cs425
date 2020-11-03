@@ -56,9 +56,9 @@ University of Illinois at Chicago
 
         vec3 ks = vec3(1, 1, 1);
         vec3 Ls = vec3(1, 1, 0);
-        vec3 v = vec4(vModelView).xyz;
-        float hnDot = dot(halfVector, normal);
-        color3 += ks * Ls * power(max(hnDot, 0.0), 4);
+        vec3 h = vec4(vModelView).xyz;
+        float hnDot = dot(h, normal);
+        color3 += ks * Ls * pow(max(hnDot, 0.0), 100.0);
 
         color = vec4(color3, 1);
 		gl_Position = vProjection * vModelView * vTransformation * vec4( vPosition, 1.0 );
