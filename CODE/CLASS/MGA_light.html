@@ -41,22 +41,30 @@ University of Illinois at Chicago
 	void main( ) {
 		precision mediump float;
 
+        vec3 pos = (vec4(vModelView).xyz * vPosition);
+
+        // ambient
         vec3 ka = vColor;
         vec3 kd = ka;
-        vec3 Iau = vec3(0, 0.4, 0);
+        vec3 Iau = vec3(0, 0, 0.3);
         vec3 color3 = ka * Iau;
-
+        vec4 lightPosition = vec4(0, 0, 10, 0);
         // diffuse light
-        vec3 Ld = vec3(0.5, 0, 0);
-        vec3 l = normalize((vec4(0, 0, 10, 0)).xyz);
+        vec3 Ld = vec3(1, 0, 0);
+        vec3 L;
+        if (lightPosition.w == 0.0)
+            L = normalize(lightPosition.xyz);
+        else
+            L = normalize( lightPosition.xyz - pos );
         vec3 normal = normalize((vNormalTransformation * vec4(vPosition, 1)).xyz);
-        float dotProduct = dot(l, normal);
-        color3 = color3 + max(dotProduct, 0.0) * kd * Ld;
+        float dotProduct = dot(L, normal);
+        color3 += max(dotProduct, 0.0) * kd * Ld;
 
-
-        vec3 ks = vec3(1, 1, 1);
-        vec3 Ls = vec3(1, 1, 0);
-        vec3 h = vec4(vModelView).xyz;
+        // Blinn
+        vec3 E = -normalize( pos );
+        vec3 ks = vec3(1, 0, 0);
+        vec3 Ls = vec3(1, 0, 0);
+        vec3 h = normalize( L + E );
         float hnDot = dot(h, normal);
         color3 += ks * Ls * pow(max(hnDot, 0.0), 100.0);
 
@@ -66,6 +74,7 @@ University of Illinois at Chicago
 		return;		
 		
 	} // end of main( ) of vertex shader
+
 
     </script>    <!--	End of vertex shader -->
 
@@ -89,6 +98,7 @@ University of Illinois at Chicago
 	} // End of main( ) for fragment shader
 
 
+
     </script>    <!-- End of fragment shader -->
 
 </head>
@@ -101,7 +111,20 @@ University of Illinois at Chicago
     NetID: lli201 -
     CS 425 -
     10/29/2020</h3>
-<p></p>
+<p >
+    this program implemented lighting and shading models. Including materials
+    properties like ambient, diffuse, specular, reflective colors and shininess.
+
+</p>
+<p>
+    light sources like ambient, directed and point light
+</p>
+<p>
+    defined properties for vertices, including normal and materials
+</p>
+<p>
+    implemented Gouraud Shading in vertex shader
+</p>
 
 <canvas id="gl-canvas" width="600" height="400">
     Ooops No Canvas Found

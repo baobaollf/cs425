@@ -1,0 +1,106 @@
+<!--textureExercise.html
+
+	Written Fall 2020 by John Bell based on shell provided by John Bell for CS 425
+    
+    This file contains the shell and instructions for a Texture Exercise.
+    
+    Follow the TODO steps numerically.
+ -->
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Texture Map Exercise</title>
+
+<!-- First to load up the external javascript files.  textureExerciseWorking.js does the work -->
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="textureExercise.js"></script>	<!--   Change this line -->
+
+
+<!-- First the vertex shader ------------------------------------------------------------------>
+
+<script id="vertex-shader" type="x-shader/x-vertex" >
+
+	// Attributes are values that vary from vertex to vertex 
+	attribute vec3 vPosition;	// Vertex position data in 3D space
+	attribute vec3 vColor;		// Vertex color data - Not needed for all applications
+	attribute vec2 vTexCoords;	// Texture Coordinates
+	
+	// Uniform variables are shared for all vertices 
+	uniform mat4 vModelView;		// Camera Model View Matrix
+	uniform mat4 vProjection;		// Camera Projection Matrix
+	uniform mat4 vTransformation;	// Model transformation matrix
+	
+	// Varying values are passed from vertex shader to fragment shader, as interpolated values 
+	varying vec4 color;			// Interpolated color 
+	varying vec2 fTexCoords;	// Texture coordinatges passed to fragment shader
+	
+	void main( ) {
+		precision mediump float;
+		
+		// Pass-throughs to fragment shader
+		color = vec4( vColor, 1.0 );
+		fTexCoords = vTexCoords;
+		
+		// Apply the model transformation
+		gl_Position = vProjection * vModelView * vTransformation * vec4( vPosition, 1.0 );
+
+		return;		
+		
+	} // end of main( ) of vertex shader
+
+</script>	<!--	End of vertex shader -->
+
+<!--  Next the fragment shader --------------------------------------------------------------------->
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+	precision mediump float;
+	
+	// Varying variables are interpolated between vertices of a triangle
+	varying vec4 color;			// Fragment color - Not needed in all applications
+	varying vec2 fTexCoords;	// Fragment texture coordinates
+	
+	// Uniform variables are shared for all fragments 
+	
+	uniform sampler2D texMap;
+
+	void main( ) {
+		
+		// The simplest fragment shader picks a solid color
+		// gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 ); // Red
+		
+		// Next simplest uses the color passed through from the vertex shader ( or from a uniform variable. )
+		//gl_FragColor = color;
+		gl_FragColor = texture2D( texMap, fTexCoords );
+			
+		return;
+	
+	} // End of main( ) for fragment shader
+	
+</script>	<!-- End of fragment shader -->
+
+</head>
+
+<!-- End of all the scripts.  Now here is the actual web page -->
+
+<body>
+<h3 align="center">Texture Map Exercise Program<br />
+John Bell - 
+Fall 2020 - 
+CS 425</h3>
+<p></p>
+
+<canvas id="gl-canvas" width="600" height="400">
+  Ooops No Canvas Found
+</canvas>
+<p>
+  This line is after the canvas
+</p>
+<p><img id="bricks" src="bricksSquare.jpg"  hidden/></p>
+</body>
+</html>
