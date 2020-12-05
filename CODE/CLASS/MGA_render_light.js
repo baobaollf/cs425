@@ -57,7 +57,7 @@ window.onload = function init() {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     view = new MGA(gl, program, MGA_location);
     gl.enable(gl.DEPTH_TEST);
-
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     render();
 }
 
@@ -68,7 +68,8 @@ window.onload = function init() {
 // 'a' and 'd' make the camera rotate around the
 // merry go around
 function render() {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.useProgram(program);
     let modelView = lookAt(eye, at, up);
     let vModelView = gl.getUniformLocation(program, "vModelView");
     gl.uniformMatrix4fv(vModelView, false, flatten(modelView));

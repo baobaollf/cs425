@@ -18,6 +18,8 @@ class MGA {
         this.program = program;
         // cone coordinates
         this.cones = [];
+
+
         this.cone = new Cone(6, this.gl, this.program, [1, 1, 1]);
         this.x = x;
         this.y = y;
@@ -59,10 +61,13 @@ class MGA {
             this.coneMoves[i] = mult(coneTranslation, form);
             this.cones[i] = new Cone(this.nSectors, gl, program, colors[i]);
         }
+        // this.wall.render();
     }
 
     // render entire merry go around with actions
     render() {
+        new Wall(gl);
+        gl.useProgram(this.program);
         // get time seed
         let today = new Date();
         let rotation = rotateY(today.getTime() / 8);
@@ -74,7 +79,7 @@ class MGA {
         let transformation = mult(MGA_move, this.baseMove);
         this.gl.uniformMatrix4fv(vTransformation, false, flatten(transformation));
 
-        let vNormalTransformation = gl.getUniformLocation(program, "vNormalTransformation");
+        let vNormalTransformation = gl.getUniformLocation(this.program, "vNormalTransformation");
         let normalTransformation = (rotation);
         gl.uniformMatrix4fv(vNormalTransformation, false, flatten(normalTransformation));
         this.cone.render();
@@ -95,5 +100,6 @@ class MGA {
             gl.uniformMatrix4fv(vNormalTransformation, false, flatten(normalTransformation));
             this.cones[i].render();
         }
+
     }
 }

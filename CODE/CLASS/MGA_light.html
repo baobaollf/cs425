@@ -11,16 +11,17 @@ University of Illinois at Chicago
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Cone Functions Exercise</title>
+    <title>HW 4</title>
 
     <!-- First to load up the external javascript files.  MultiObjectFunctions and cube.js does the work -->
 
     <script type="text/javascript" src="../Common/webgl-utils.js"></script>
     <script type="text/javascript" src="../Common/initShaders.js"></script>
     <script type="text/javascript" src="../Common/MV.js"></script>
-    <script type="text/javascript" src="Cone_object-light.js"></script>    <!--   Change this line -->
-    <script type="text/javascript" src="MGA_object_light.js"></script>    <!--   Change this line -->
-    <script type="text/javascript" src="MGA_render_light.js"></script>    <!--   Change this line -->
+    <script type="text/javascript" src="Cone_object-light.js"></script>
+    <script type="text/javascript" src="MGA_object_light.js"></script>
+    <script type="text/javascript" src="MGA_render_light.js"></script>
+    <script type="text/javascript" src="Wall_object_light.js"></script>
 
     <!-- First the vertex shader ------------------------------------------------------------------>
 
@@ -29,7 +30,7 @@ University of Illinois at Chicago
 	// Attributes are values that vary from vertex to vertex 
 	attribute vec3 vPosition;	// Vertex position data in 3D space
 	attribute vec3 vColor;		// Vertex color data - Not needed for all applications
-	
+	attribute vec2 vTexCoords;	// Texture Coordinates
 	
 	// Uniform variables are shared for all vertices 
 	uniform mat4 vModelView;	// Camera Model View Matrix
@@ -37,10 +38,10 @@ University of Illinois at Chicago
 	uniform mat4 vTransformation;	// Model transformation matrix
 	uniform mat4 vNormalTransformation;
     varying vec4 color;
-	
+	varying vec2 fTexCoords;	// Texture coordinatges passed to fragment shader
 	void main( ) {
 		precision mediump float;
-
+        fTexCoords = vTexCoords;
         vec3 pos = (vec4(vModelView).xyz * vPosition);
 
         // ambient
@@ -78,6 +79,38 @@ University of Illinois at Chicago
 
     </script>    <!--	End of vertex shader -->
 
+
+    <script id="vertex-shader-2" type="x-shader/x-vertex">
+
+	// Attributes are values that vary from vertex to vertex
+	attribute vec3 vPosition;	// Vertex position data in 3D space
+	attribute vec3 vColor;		// Vertex color data - Not needed for all applications
+	attribute vec2 vTexCoords;	// Texture Coordinates
+
+	// Uniform variables are shared for all vertices
+	uniform mat4 vModelView;		// Camera Model View Matrix
+	uniform mat4 vProjection;		// Camera Projection Matrix
+	uniform mat4 vTransformation;	// Model transformation matrix
+
+	// Varying values are passed from vertex shader to fragment shader, as interpolated values
+	varying vec4 color;			// Interpolated color
+	varying vec2 fTexCoords;	// Texture coordinatges passed to fragment shader
+
+	void main( ) {
+		precision mediump float;
+
+		// Pass-throughs to fragment shader
+		color = vec4( vColor, 1.0 );
+		fTexCoords = vTexCoords;
+
+		// Apply the model transformation
+		gl_Position = vProjection * vModelView * vTransformation * vec4( vPosition, 1.0 );
+		return;
+
+	} // end of main( ) of vertex shader
+
+    </script>
+
     <!--  Next the fragment shader --------------------------------------------------------------------->
 
     <script id="fragment-shader" type="x-shader/x-fragment">
@@ -85,14 +118,12 @@ University of Illinois at Chicago
 	
 	// Varying variables are interpolated between vertices of a triangle
 	varying vec4 color;			// Fragment color - Not needed in all applications
-	
-	// Uniform variables are shared for all fragments 
-	// None needed for a simple shader.
+	varying vec2 fTexCoords;	// Fragment texture coordinates
 
+    uniform sampler2D texMap;
 	void main( ) {
 		// Next simplest uses the color passed through from the vertex shader ( or from a uniform variable. )
 		gl_FragColor = color;
-			
 		return;
 	
 	} // End of main( ) for fragment shader
@@ -101,29 +132,51 @@ University of Illinois at Chicago
 
     </script>    <!-- End of fragment shader -->
 
+    <script id="fragment-shader-2" type="x-shader/x-fragment">
+	precision mediump float;
+
+	// Varying variables are interpolated between vertices of a triangle
+	varying vec4 color;			// Fragment color - Not needed in all applications
+	varying vec2 fTexCoords;	// Fragment texture coordinates
+
+	// Uniform variables are shared for all fragments
+
+	uniform sampler2D texMap;
+
+	void main( ) {
+		gl_FragColor = texture2D( texMap, fTexCoords );
+		return;
+
+	} // End of main( ) for fragment shader
+
+</script>	<!-- End of fragment shader -->
+
 </head>
 
 <!-- End of all the scripts.  Now here is the actual web page -->
 
 <body>
-<h3 align="center">HW3<br/>
+<h3 align="center">HW4<br/>
     Linfeng Li -
     NetID: lli201 -
     CS 425 -
-    10/29/2020</h3>
+    11/14/2020</h3>
 <p >
-    this program implemented lighting and shading models. Including materials
+    - this program implemented lighting and shading models. Including materials
     properties like ambient, diffuse, specular, reflective colors and shininess.
 
 </p>
 <p>
-    light sources like ambient, directed and point light
+    - light sources like ambient, directed and point light
 </p>
 <p>
-    defined properties for vertices, including normal and materials
+    - defined properties for vertices, including normal and materials
 </p>
 <p>
-    implemented Gouraud Shading in vertex shader
+    - implemented Gouraud Shading in vertex shader
+</p>
+<p>
+    - multiple vertex and fragment shapers to have a wall texture map
 </p>
 
 <canvas id="gl-canvas" width="600" height="400">
@@ -156,7 +209,7 @@ University of Illinois at Chicago
 <p>
     user is able to navigate around the scene by using keyboard inputs
 </p>
-
+<p><img id="bricks" src="bricksSquare.jpg"  hidden/></p>
 
 </body>
 </html>

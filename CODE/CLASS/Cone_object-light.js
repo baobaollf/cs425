@@ -60,6 +60,7 @@ class Cone {
         return;
     }
 
+
     render() {
 // attach vertex shader variables to the buffers created above
         var gl = this.gl;
